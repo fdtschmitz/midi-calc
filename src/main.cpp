@@ -74,17 +74,10 @@ void setup() {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;);
   }
-  
   // Show startup message
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println("Button Bash");
-  display.println("Standard/Scales/Drums");
-  display.println("Press 'MODE' to switch modes");
-  display.display();
-  delay(2000);
+  startupDisplay();
+
+  delay(2500);
   
   // Initialize button pins
   for (int i = 0; i < numNoteButtons; i++) {
