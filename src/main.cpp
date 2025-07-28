@@ -15,12 +15,20 @@
  - SDA: Pin 2 (SDA)
  - SCL: Pin 3 (SCL)
   
- Button connections:
- - Buttons 1-7: Pins 4-10 to GND (with internal pullup)
- - Button 8, 9, 10: Pins 16, 14 and 15 to GND (with internal pullup)
- - Button 11 (Mode): Pin A0 to GND (with internal pullup)
- 
- Mode Functions:
+ Button connections to pins (Wired to GND with internal pullup)
+ - Button 1: Pin 16;
+ - Button 2: Pin 7;
+ - Button 3: Pin 4;
+ - Button 4: Pin 14;
+ - Button 5: Pin 8;
+ - Button 6: Pin 5;
+ - Button 7: Pin 15;
+ - Button 8: Pin 9;
+ - Button 9: Pin 6;
+ - Button 10: Pin 10;
+ - Button 11: Pin 18 (A0);
+
+  Mode Functions:
  - Standard Mode: C-D-E-F-G-A-B with sharp and octave controls
  - Scales Mode: Various scales with semitone transposition
  - Drums Mode: All 10 buttons play different drum sounds

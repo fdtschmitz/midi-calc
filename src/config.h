@@ -46,10 +46,10 @@ extern const unsigned long ANIMATION_DELAY;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Button pins
-const int notePins[] = {4, 5, 6, 7, 8, 9, 10}; // Buttons 1-7
-const int sharpPin = 16;        // Button 8 (Sharp/Scale selector)
-const int octaveDownPin = 14;   // Button 9 (Octave/Transpose down)
-const int octaveUpPin = 15;     // Button 10 (Octave/Transpose up)
+const int notePins[] = {16, 7, 4, 14, 8, 5, 15}; // Buttons 1-7
+const int sharpPin = 6;        // Button 8 (Sharp/Scale selector)
+const int octaveDownPin = 8;   // Button 9 (Octave/Transpose down)
+const int octaveUpPin = 10;     // Button 10 (Octave/Transpose up)
 const int modePin = A0;         // Button 11 (Mode selector)
 
 const int numNoteButtons = 7;

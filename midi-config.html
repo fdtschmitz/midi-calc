@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI Controller Configuration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4444;
+            transition: background 0.3s ease;
+        }
+
+        .status-dot.connected {
+            background: #44ff44;
+            box-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .chord-config {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .chord-slot {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .chord-slot:hover {
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .chord-slot h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .note-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .note-checkbox {
+            display: none;
+        }
+
+        .note-label {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .note-label:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .note-checkbox:checked + .note-label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .octave-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .octave-control label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .octave-control select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-size: 1rem;
+        }
+
+        .save-buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .save-buttons .btn {
+            margin: 0 10px;
+        }
+
+        .log {
+            background: #1a1a1a;
+            color: #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-entry.error {
+            color: #ff4444;
+        }
+
+        .log-entry.success {
+            color: #44ff44;
+        }
+
+        .log-entry.info {
+            color: #44aaff;
+        }
+
+        @media (max-width: 768px) {
+            .chord-config {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎹 MIDI Controller Config</h1>
+            <p>Configure chord mappings for your Arduino MIDI Controller</p>
+        </div>
+
+        <div class="card">
+            <div class="connection-status">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Disconnected</span>
+                </div>
+                <button class="btn" id="connectBtn">Connect to Controller</button>
+            </div>
+
+            <div id="configSection" style="display: none;">
+                <h2>Chord Configuration</h2>
+                <p>Configure up to 7 different chords for your controller buttons:</p>
+                
+                <div class="chord-config" id="chordConfig">
+                    <!-- Chord slots will be generated here -->
+                </div>
+
+                <div class="save-buttons">
+                    <button class="btn" id="saveBtn">💾 Save to Controller</button>
+                    <button class="btn" id="loadBtn">📥 Load from Controller</button>
+                    <button class="btn" id="resetBtn">🔄 Reset to Defaults</button>
+                </div>
+            </div>
+
+            <div class="log" id="log">
+                <div class="log-entry info">Ready to connect to MIDI Controller...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MIDIControllerConfig {
+            constructor() {
+                this.port = null;
+                this.reader = null;
+                this.writer = null;
+                this.chords = [];
+                
+                // Initialize 7 empty chords
+                for (let i = 0; i < 7; i++) {
+                    this.chords.push({
+                        notes: [],
+                        octave: 4
+                    });
+                }
+                
+                this.noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                
+                this.initUI();
+                this.setupEventListeners();
+            }
+
+            initUI() {
+                this.createChordSlots();
+                this.loadDefaultChords();
+            }
+
+            createChordSlots() {
+                const container = document.getElementById('chordConfig');
+                container.innerHTML = '';
+
+                for (let i = 0; i < 7; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'chord-slot';
+                    slot.innerHTML = `
+                        <h3>Button ${i + 1} Chord</h3>
+                        <div class="note-grid">
+                            ${this.noteNames.map((note, idx) => `
+                                <input type="checkbox" class="note-checkbox" id="note-${i}-${idx}" 
+                                       data-chord="${i}" data-note="${idx}">
+                                <label for="note-${i}-${idx}" class="note-label">${note}</label>
+                            `).join('')}
+                        </div>
+                        <div class="octave-control">
+                            <label for="octave-${i}">Octave:</label>
+                            <select id="octave-${i}" data-chord="${i}">
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4" selected>4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                        </div>
+                    `;
+                    container.appendChild(slot);
+                }
+            }
+
+            loadDefaultChords() {
+                // Load some common chords as defaults
+                const defaultChords = [
+                    { notes: [0, 4, 7], octave: 4 },      // C Major
+                    { notes: [2, 6, 9], octave: 4 },      // D Minor
+                    { notes: [4, 8, 11], octave: 4 },     // E Minor
+                    { notes: [5, 9, 0], octave: 4 },      // F Major
+                    { notes: [7, 11, 2], octave: 4 },     // G Major
+                    { notes: [9, 1, 4], octave: 4 },      // A Minor
+                    { notes: [11, 3, 6], octave: 4 }      // B Diminished
+                ];
+
+                defaultChords.forEach((chord, chordIdx) => {
+                    this.chords[chordIdx] = { ...chord };
+                    
+                    // Update UI
+                    chord.notes.forEach(noteIdx => {
+                        const checkbox = document.getElementById(`note-${chordIdx}-${noteIdx}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                    
+                    const octaveSelect = document.getElementById(`octave-${chordIdx}`);
+                    if (octaveSelect) octaveSelect.value = chord.octave;
+                });
+            }
+
+            setupEventListeners() {
+                document.getElementById('connectBtn').addEventListener('click', () => this.connect());
+                document.getElementById('saveBtn').addEventListener('click', () => this.saveToController());
+                document.getElementById('loadBtn').addEventListener('click', () => this.loadFromController());
+                document.getElementById('resetBtn').addEventListener('click', () => this.resetToDefaults());
+
+                // Note selection listeners
+                document.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('note-checkbox')) {
+                        this.updateChordFromUI(parseInt(e.target.dataset.chord));
+                    } else if (e.target.tagName === 'SELECT' && e.target.id.startsWith('octave-')) {
+                        this.updateChordFromUI(parseInt(e.target.dataset.chord));
+                    }
+                });
+            }
+
+            updateChordFromUI(chordIdx) {
+                const notes = [];
+                for (let noteIdx = 0; noteIdx < 12; noteIdx++) {
+                    const checkbox = document.getElementById(`note-${chordIdx}-${noteIdx}`);
+                    if (checkbox && checkbox.checked) {
+                        notes.push(noteIdx);
+                    }
+                }
+                
+                const octaveSelect = document.getElementById(`octave-${chordIdx}`);
+                const octave = octaveSelect ? parseInt(octaveSelect.value) : 4;
+                
+                this.chords[chordIdx] = { notes, octave };
+                this.log(`Updated chord ${chordIdx + 1}: ${this.chordToString(chordIdx)}`, 'info');
+            }
+
+            chordToString(chordIdx) {
+                const chord = this.chords[chordIdx];
+                if (chord.notes.length === 0) return 'Empty';
+                
+                return chord.notes.map(noteIdx => 
+                    this.noteNames[noteIdx] + chord.octave
+                ).join(', ');
+            }
+
+            async connect() {
+                try {
+                    if (!('serial' in navigator)) {
+                        throw new Error('Web Serial API not supported');
+                    }
+
+                    this.port = await navigator.serial.requestPort();
+                    await this.port.open({ baudRate: 9600 });
+
+                    this.reader = this.port.readable.getReader();
+                    this.writer = this.port.writable.getWriter();
+
+                    this.updateConnectionStatus(true);
+                    this.log('Connected to MIDI Controller', 'success');
+                    
+                    document.getElementById('configSection').style.display = 'block';
+                    
+                    // Start reading responses
+                    this.readLoop();
+
+                } catch (error) {
+                    this.log(`Connection failed: ${error.message}`, 'error');
+                }
+            }
+
+            async readLoop() {
+                try {
+                    while (true) {
+                        const { value, done } = await this.reader.read();
+                        if (done) break;
+
+                        const text = new TextDecoder().decode(value);
+                        this.handleResponse(text);
+                    }
+                } catch (error) {
+                    this.log(`Read error: ${error.message}`, 'error');
+                }
+            }
+
+            handleResponse(response) {
+                this.log(`Controller: ${response.trim()}`, 'info');
+                
+                if (response.startsWith('CHORD_DATA:')) {
+                    this.parseChordData(response);
+                }
+            }
+
+            parseChordData(data) {
+                try {
+                    // Parse chord data from controller
+                    // Format: CHORD_DATA:chord_idx,note1,note2,note3,octave
+                    const parts = data.substring(11).split(',');
+                    const chordIdx = parseInt(parts[0]);
+                    const octave = parseInt(parts[parts.length - 1]);
+                    const notes = parts.slice(1, -1).map(n => parseInt(n)).filter(n => !isNaN(n));
+                    
+                    if (chordIdx >= 0 && chordIdx < 7) {
+                        this.chords[chordIdx] = { notes, octave };
+                        this.updateUIFromChord(chordIdx);
+                        this.log(`Loaded chord ${chordIdx + 1} from controller`, 'success');
+                    }
+                } catch (error) {
+                    this.log(`Failed to parse chord data: ${error.message}`, 'error');
+                }
+            }
+
+            updateUIFromChord(chordIdx) {
+                const chord = this.chords[chordIdx];
+                
+                // Clear all checkboxes for this chord
+                for (let noteIdx = 0; noteIdx < 12; noteIdx++) {
+                    const checkbox = document.getElementById(`note-${chordIdx}-${noteIdx}`);
+                    if (checkbox) checkbox.checked = false;
+                }
+                
+                // Set selected notes
+                chord.notes.forEach(noteIdx => {
+                    const checkbox = document.getElementById(`note-${chordIdx}-${noteIdx}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+                
+                // Set octave
+                const octaveSelect = document.getElementById(`octave-${chordIdx}`);
+                if (octaveSelect) octaveSelect.value = chord.octave;
+            }
+
+            async sendCommand(command) {
+                if (!this.writer) {
+                    this.log('Not connected to controller', 'error');
+                    return;
+                }
+
+                try {
+                    const encoder = new TextEncoder();
+                    await this.writer.write(encoder.encode(command + '\n'));
+                    this.log(`Sent: ${command}`, 'info');
+                } catch (error) {
+                    this.log(`Send error: ${error.message}`, 'error');
+                }
+            }
+
+            async saveToController() {
+                this.log('Saving chords to controller...', 'info');
+                
+                for (let i = 0; i < 7; i++) {
+                    const chord = this.chords[i];
+                    const command = `SET_CHORD:${i},${chord.notes.join(',')},${chord.octave}`;
+                    await this.sendCommand(command);
+                    await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+                }
+                
+                await this.sendCommand('SAVE_CONFIG');
+                this.log('All chords saved to controller', 'success');
+            }
+
+            async loadFromController() {
+                this.log('Loading chords from controller...', 'info');
+                await this.sendCommand('GET_CHORDS');
+            }
+
+            resetToDefaults() {
+                this.loadDefaultChords();
+                this.log('Reset to default chords', 'info');
+            }
+
+            updateConnectionStatus(connected) {
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+                const btn = document.getElementById('connectBtn');
+
+                if (connected) {
+                    dot.classList.add('connected');
+                    text.textContent = 'Connected';
+                    btn.textContent = 'Disconnect';
+                    btn.onclick = () => this.disconnect();
+                } else {
+                    dot.classList.remove('connected');
+                    text.textContent = 'Disconnected';
+                    btn.textContent = 'Connect to Controller';
+                    btn.onclick = () => this.connect();
+                    document.getElementById('configSection').style.display = 'none';
+                }
+            }
+
+            async disconnect() {
+                try {
+                    if (this.reader) {
+                        await this.reader.cancel();
+                        await this.reader.releaseLock();
+                    }
+                    if (this.writer) {
+                        await this.writer.releaseLock();
+                    }
+                    if (this.port) {
+                        await this.port.close();
+                    }
+                    
+                    this.port = null;
+                    this.reader = null;
+                    this.writer = null;
+                    
+                    this.updateConnectionStatus(false);
+                    this.log('Disconnected from controller', 'info');
+                    
+                } catch (error) {
+                    this.log(`Disconnect error: ${error.message}`, 'error');
+                }
+            }
+
+            log(message, type = 'info') {
+                const logElement = document.getElementById('log');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logElement.appendChild(entry);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new MIDIControllerConfig();
+        });
+    </script>
+</body>
+</html>
