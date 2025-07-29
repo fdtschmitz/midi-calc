@@ -278,6 +278,56 @@ void handleModeButton() {
 // === STOP ALL PLAYING NOTES ===
 // This function is defined in midi_functions.h to avoid redefinition
 
+// === CHORD BUTTON HANDLER (CHORD MODE) ===
+// Adicionar função para lidar com botões no modo chord
+void handleChordButton(int index) {
+  int reading = digitalRead(notePins[index]);
+
+  if (reading != lastNoteStates[index]) {
+    lastDebounceTime[index] = millis();
+  }
+
+  if ((millis() - lastDebounceTime[index]) > debounceDelay) {
+    if (reading != noteStates[index]) {
+      noteStates[index] = reading;
+
+      if (noteStates[index] == LOW) { // Pressed
+        int noteCount;
+        int* chordNotes = calculateChordMidiNotes(index, &noteCount);
+        
+        // Tocar todas as notas do acorde
+        for (int i = 0; i < noteCount; i++) {
+          sendMidiNoteOn(midiChannel, chordNotes[i], 127);
+        }
+        
+        // Armazenar informações para o note off
+        playedMidiNotes[index] = index; // Usar index como identificador
+        noteIsPlaying[index] = true;
+        
+        // Mostrar nome do acorde no display
+        currentNote = "Chord " + String(index + 1);
+        displayTimeout = millis() + DISPLAY_TIMEOUT;
+        updateDisplay();
+        
+      } else { // Released
+        if (noteIsPlaying[index]) {
+          int noteCount;
+          int* chordNotes = calculateChordMidiNotes(index, &noteCount);
+          
+          // Parar todas as notas do acorde
+          for (int i = 0; i < noteCount; i++) {
+            sendMidiNoteOff(midiChannel, chordNotes[i], 0);
+          }
+          
+          noteIsPlaying[index] = false;
+        }
+      }
+    }
+  }
+
+  lastNoteStates[index] = reading;
+}
+
 // === UPDATE ALL BUTTONS BASED ON CURRENT MODE ===
 void updateButtons() {
   // Handle mode button (always active)
@@ -308,6 +358,12 @@ void updateButtons() {
     handleDrumButton(numNoteButtons, sharpPin);     // Button 8
     handleDrumButton(numNoteButtons + 1, octaveDownPin); // Button 9
     handleDrumButton(numNoteButtons + 2, octaveUpPin);   // Button 10
+  } else if (currentMode == MODE_CHORD) { // NOVO MODO
+    for (int i = 0; i < numNoteButtons; i++) {
+      handleChordButton(i);
+    }
+    // No modo chord, os botões extras podem ser usados para funções especiais
+    // ou simplesmente ignorados
   }
 }
 

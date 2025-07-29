@@ -1,7 +1,6 @@
 /*
  Arduino Pro Micro MIDI Controller - Multi-Mode Musical Controller
- Main File: midi_controller_main.ino
-  
+   
  Files structure:
  - midi_controller_main.ino (this file)
  - config.h (pin definitions and constants)
@@ -9,6 +8,7 @@
  - display.h (display functions)
  - midi_functions.h (MIDI communication functions)
  - button_handlers.h (button handling functions)
+ - chords.h (chords configurations)
   
  Hardware connections:
  OLED Display (I2C):
@@ -32,18 +32,22 @@
  - Standard Mode: C-D-E-F-G-A-B with sharp and octave controls
  - Scales Mode: Various scales with semitone transposition
  - Drums Mode: All 10 buttons play different drum sounds
+ - Chord Mode: 7 configurable chords via Web Serial API
  */
 
 #include <MIDIUSB.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <EEPROM.h>
+#include <stdint.h>
 
 #include "config.h"
 #include "modes.h"
 #include "display.h"
 #include "midi_functions.h"
 #include "button_handlers.h"
+#include "serial_api.h"
 
 // Global variables
 ControllerMode currentMode = MODE_STANDARD;
@@ -61,6 +65,9 @@ bool lastOctaveUpState = false;
 bool modeState = false;
 bool lastModeState = false;
 
+String serialBuffer = "";
+bool serialCommandReady = false;
+
 int currentOctave = 4;
 int octaveOffset = 0;
 int semitoneOffset = 0;
@@ -76,7 +83,17 @@ unsigned long displayTimeout = 0;
 unsigned long lastAnimationUpdate = 0;
 int animationFrame = 0;
 
+// Serial communication variables
+String serialBuffer = "";
+bool serialCommandReady = false;
+
 void setup() {
+  // Initialize serial communication FIRST
+  Serial.begin(9600);
+  
+  // Load chord configuration from EEPROM
+  loadChordConfig();
+
   // Initialize OLED display
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -122,17 +139,21 @@ void setup() {
   for (int i = 0; i < numNoteButtons + 4; i++) {
     lastDebounceTime[i] = 0;
   }
-  
-  // Initialize serial
-  Serial.begin(9600);
+
   
   // Show initial display
   updateDisplay();
+
+  // Signal that controller is ready
+  Serial.println("MIDI_CONTROLLER_READY");
   
   delay(100);
 }
 
 void loop() {
+  // Handle serial communication first
+  handleSerialCommunication();
+
   // Handle mode button
   handleModeButton();
   
@@ -160,6 +181,12 @@ void loop() {
     handleDrumButton(numNoteButtons, sharpPin);     // Button 8
     handleDrumButton(numNoteButtons + 1, octaveDownPin); // Button 9
     handleDrumButton(numNoteButtons + 2, octaveUpPin);   // Button 10
+  } else if (currentMode == MODE_CHORD) {
+    // Handle 7 chord buttons
+    for (int i = 0; i < numNoteButtons; i++) {
+      handleChordButton(i);
+    }
+    // Extra buttons can be used for special functions or ignored
   }
   
   // Handle all buttons based on current mode
@@ -204,3 +231,5 @@ extern bool octaveUpState;
 extern bool lastOctaveUpState;
 extern bool modeState;
 extern bool lastModeState;
+extern bool serialCommandReady;
+extern String serialBuffer;

@@ -15,6 +15,23 @@
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
+// CHORDS Settings
+#define CHORD_CONFIG_START_ADDR 0
+#define CHORD_CONFIG_MAGIC 0xABCD
+
+struct ChordData {
+  int notes[8];      // Máximo 8 notas por acorde
+  int noteCount;     // Número de notas no acorde
+  int octave;        // Oitava base do acorde
+};
+
+struct ChordConfig {
+  uint16_t magic;
+  ChordData chords[7];
+};
+
+extern ChordData chords[7];
+
 // Create display object
 extern Adafruit_SSD1306 display;
 

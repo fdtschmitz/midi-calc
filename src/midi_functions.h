@@ -14,7 +14,9 @@ void sendMidiNoteOff(byte channel, byte note, byte velocity);
 int calculateStandardMidiNote(int buttonIndex);
 int calculateScaleMidiNote(int buttonIndex);
 int calculateDrumMidiNote(int buttonIndex);
+int* calculateChordMidiNotes(int buttonIndex, int* noteCount);
 void stopAllPlayingNotes();
+void stopAllChordNotes();
 
 // External variables needed for MIDI functions
 extern ControllerMode currentMode;
@@ -64,6 +66,24 @@ int calculateDrumMidiNote(int buttonIndex) {
   return drumNotes[0]; // Fallback to kick drum
 }
 
+int* calculateChordMidiNotes(int buttonIndex, int* noteCount) {
+  static int midiNotes[8];
+  *noteCount = 0;
+  
+  if (buttonIndex >= 7) return midiNotes;
+  
+  ChordData chord = chords[buttonIndex];
+  *noteCount = chord.noteCount;
+  
+  int baseNote = 60 + (chord.octave - 4) * 12; // C4 como base
+  
+  for (int i = 0; i < chord.noteCount; i++) {
+    midiNotes[i] = baseNote + chord.notes[i];
+  }
+  
+  return midiNotes;
+}
+
 void stopAllPlayingNotes() {
   int maxButtons = (currentMode == MODE_DRUMS) ? 10 : 7;
   
@@ -75,5 +95,21 @@ void stopAllPlayingNotes() {
     }
   }
 }
+
+void stopAllChordNotes() {
+  for (int i = 0; i < 7; i++) {
+    if (noteIsPlaying[i]) {
+      int noteCount;
+      int* chordNotes = calculateChordMidiNotes(i, &noteCount);
+      
+      for (int j = 0; j < noteCount; j++) {
+        sendMidiNoteOff(midiChannel, chordNotes[j], 0);
+      }
+      
+      noteIsPlaying[i] = false;
+    }
+  }
+}
+
 
 #endif // MIDI_FUNCTIONS_H

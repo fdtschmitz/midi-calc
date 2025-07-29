@@ -116,6 +116,12 @@ void updateDisplay() {
   } else if (currentMode == MODE_DRUMS) {
     display.setCursor(2, 2);
     display.print("Drum Mode");
+    
+  } else if (currentMode == MODE_CHORD) { // NOVO MODO
+    display.setCursor(2, 2);
+    display.print("Chord Mode");
+    display.setCursor(87, 2);
+    display.print("Web CFG");
   }
   
   // Current note or animated display

@@ -13,10 +13,11 @@ enum ControllerMode {
   MODE_STANDARD = 0,
   MODE_SCALES = 1,
   MODE_DRUMS = 2,
-  MODE_COUNT = 3
+  MODE_CHORD = 3,    // NOVO MODO
+  MODE_COUNT = 4     // ATUALIZAR CONTAGEM
 };
 
-extern String modeNames[3];
+extern String modeNames[4];
 
 // Scale types for scales mode
 enum ScaleType {
@@ -44,7 +45,7 @@ extern const int drumNotes[10];
 extern const String drumNames[10];
 
 // Initialize mode names
-String modeNames[] = {"Standard", "Scales", "Drums"};
+String modeNames[] = {"Standard", "Scales", "Drums", "Chord"};
 
 // Initialize scale names
 String scaleNames[] = {
@@ -85,6 +86,27 @@ const int drumNotes[10] = {
 const String drumNames[10] = {
   "Kick", "Snare", "HHat", "Open", "Crash", 
   "Ride", "Bell", "Kick2", "Snr2", "Pedal"
+};
+
+// Adicionar estrutura para acordes
+struct ChordData {
+  int notes[8];      // Máximo 8 notas por acorde
+  int noteCount;     // Número de notas no acorde
+  int octave;        // Oitava base do acorde
+};
+
+// Array para armazenar 7 acordes configuráveis
+extern ChordData chords[7];
+
+// Inicializar acordes padrão
+ChordData chords[7] = {
+  {{0, 4, 7}, 3, 4},        // C Major (C, E, G)
+  {{2, 5, 9}, 3, 4},        // D Minor (D, F, A)
+  {{4, 7, 11}, 3, 4},       // E Minor (E, G, B)
+  {{5, 9, 0}, 3, 4},        // F Major (F, A, C)
+  {{7, 11, 2}, 3, 4},       // G Major (G, B, D)
+  {{9, 0, 4}, 3, 4},        // A Minor (A, C, E)
+  {{11, 2, 5}, 3, 4}        // B Diminished (B, D, F)
 };
 
 #endif // MODES_H
