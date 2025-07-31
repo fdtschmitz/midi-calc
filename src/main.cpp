@@ -48,6 +48,7 @@
 #include "midi_functions.h"
 #include "button_handlers.h"
 #include "serial_api.h"
+#include "debug_functions.h"
 
 // Global variables
 ControllerMode currentMode = MODE_STANDARD;
@@ -64,9 +65,6 @@ bool octaveUpState = false;
 bool lastOctaveUpState = false;
 bool modeState = false;
 bool lastModeState = false;
-
-String serialBuffer = "";
-bool serialCommandReady = false;
 
 int currentOctave = 4;
 int octaveOffset = 0;
@@ -188,7 +186,13 @@ void loop() {
     }
     // Extra buttons can be used for special functions or ignored
   }
-  
+  //Debug functions
+  static unsigned long lastButtonDebugTime = 0;
+  if (millis() - lastButtonDebugTime > 1000) { // Imprime a cada 1 segundo
+    debugPrintButtonStates();
+    lastButtonDebugTime = millis();
+  }
+
   // Handle all buttons based on current mode
   updateButtons();
   

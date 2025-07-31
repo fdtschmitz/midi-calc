@@ -7,6 +7,7 @@
 
 #ifndef MIDI_FUNCTIONS_H
 #define MIDI_FUNCTIONS_H
+#include "debug_functions.h"
 
 // Function declarations
 void sendMidiNoteOn(byte channel, byte note, byte velocity);
@@ -30,12 +31,14 @@ extern bool noteIsPlaying[];
 void sendMidiNoteOn(byte channel, byte note, byte velocity) {
   midiEventPacket_t noteOn = {0x09, 0x90 | channel, note, velocity};
   MidiUSB.sendMIDI(noteOn);
+  debugPrintMidiMessage("Note ON", channel, note, velocity);
   MidiUSB.flush();
 }
 
 void sendMidiNoteOff(byte channel, byte note, byte velocity) {
   midiEventPacket_t noteOff = {0x08, 0x80 | channel, note, velocity};
   MidiUSB.sendMIDI(noteOff);
+  debugPrintMidiMessage("Note ON", channel, note, velocity);
   MidiUSB.flush();
 }
 

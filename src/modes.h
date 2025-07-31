@@ -88,13 +88,6 @@ const String drumNames[10] = {
   "Ride", "Bell", "Kick2", "Snr2", "Pedal"
 };
 
-// Adicionar estrutura para acordes
-struct ChordData {
-  int notes[8];      // Máximo 8 notas por acorde
-  int noteCount;     // Número de notas no acorde
-  int octave;        // Oitava base do acorde
-};
-
 // Array para armazenar 7 acordes configuráveis
 extern ChordData chords[7];
 
